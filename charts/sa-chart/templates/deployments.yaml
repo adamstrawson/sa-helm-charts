@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.name }}
+spec:
+  {{- if eq .Values.hpa.enabled false }}
+  replicas: {{ .Values.deployment.replicas }}
+  {{- end }}
+  revisionHistoryLimit: 5
+  progressDeadlineSeconds: 120
+  minReadySeconds: 1
+  selector:
+    matchLabels:
+      app: {{ .Values.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.name }}
+    spec:
+      containers:
+        - name: {{ .Values.name }}
+          image: {{ .Values.image }}
+          imagePullPolicy: Always
+          securityContext:
+            # readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+          ports:
+            - containerPort: {{ .Values.deployment.port }}
+          {{- if .Values.deployment.env }} 
+          env:
+{{ toYaml .Values.deployment.env | indent 12 }}
+          {{- end }}
+          resources:
+{{ toYaml .Values.deployment.resources | indent 12 }}
+          livenessProbe:
+            httpGet:
+              path: /
+              port: {{ .Values.deployment.port }}
+            failureThreshold: 2
+            successThreshold: 1
+            initialDelaySeconds: 10
+            periodSeconds: 2
+            timeoutSeconds: 2
+          readinessProbe:
+            httpGet:
+              path: /
+              port: {{ .Values.deployment.port }}
+            failureThreshold: 2
+            successThreshold: 2
+            initialDelaySeconds: 15
+            periodSeconds: 2
+            timeoutSeconds: 2

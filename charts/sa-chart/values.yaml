@@ -1,0 +1,30 @@
+name: FOO
+image: foo
+
+deployment:
+  # -- Default replicas if HPA isn't enabled
+  replicas: 2
+  # -- Port the pod listens on
+  port: 80
+  # -- Pod resources
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "128Mi"
+    limits:
+      cpu: "500m"
+      memory: "512Mi"
+
+service:
+  # -- Port that the pod listens on
+  targetPort: 80
+
+hpa:
+  # -- Enable HPA
+  enabled: true
+  # -- Minimum number of pods to run
+  minPods: 3
+  # -- Maximum number of pods to run
+  maxPods: 8
+  # -- Target CPU Threshold before scaling pods
+  targetCPU: 75
